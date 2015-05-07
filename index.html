@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>    
+	<script>
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("GET","index.xml",false);
+	xmlhttp.send();
+	xmlDoc=xmlhttp.responseXML;
+
+
+	var scr="//td/script";
+	var a=xmlDoc.evaluate(scr, xmlDoc, null, XPathResult.ANY_TYPE,null);
+	console.log(a);
+	var result=a.iterateNext();
+	var r=/^(\$.plot)(.*)/g;
+
+	while (result)
+	  {
+	//  console.log(result.innerHTML);
+	var b=result.innerHTML;
+	var i=b.indexOf("$.plot");
+	b=b.substring(0,i);
+	b=b.replace(/\$\(function \(\) {/g,"");
+	b=b.replace(/(var|d0|d1|=|;|\(|\))/g,"");
+
+//	  console.log(b);
+try{
+	var c=JSON.parse(b.trim());
+	console.log(c.length);
+}catch(e){
+//	  console.log(b);
+	console.log(e);
+}
+
+	  result=a.iterateNext();
+	  }
+
+	</script>
+
+</head>
+
+  <body>
+  </body>
+</html>
+
