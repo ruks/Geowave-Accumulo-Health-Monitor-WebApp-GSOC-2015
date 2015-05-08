@@ -15,6 +15,7 @@
 	var result=a.iterateNext();
 	var r=/^(\$.plot)(.*)/g;
 
+var l=0;
 	while (result)
 	  {
 	//  console.log(result.innerHTML);
@@ -22,12 +23,18 @@
 	var i=b.indexOf("$.plot");
 	b=b.substring(0,i);
 	b=b.replace(/\$\(function \(\) {/g,"");
-	b=b.replace(/(var|d0|d1|=|;|\(|\))/g,"");
 
-//	  console.log(b);
+	
+	var ar=b.split(";");
+	var cnt=ar.length-1;
+	  
 try{
-	var c=JSON.parse(b.trim());
-	console.log(c.length);
+for(var o=0;o<cnt;o++){
+	var rb=ar[o].trim();
+	rb=rb.replace(/(var|d0|d1|=|;|\(|\))/g,"");
+	var c=JSON.parse(rb);
+	console.log((l++)+" "+c);
+}
 }catch(e){
 //	  console.log(b);
 	console.log(e);
