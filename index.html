@@ -85,8 +85,28 @@ var quantize = d3.scale.quantize()
     .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
 
 var devide=function(id){
+	
+	if(id < 1000)
+	 return "q" + 0 + "-9";
+	if(id < 3000)
+	 return "q" + 1 + "-9";
+	if(id < 7000)
 	 return "q" + 2 + "-9";
+	if(id < 10000)
+	 return "q" + 3 + "-9";
+	if(id < 15000)
+	 return "q" + 4 + "-9";
+	if(id < 30000)
+	 return "q" + 5 + "-9";
+	if(id < 70000)
+	 return "q" + 6 + "-9";
 };
+
+var data=new Array();
+
+var setData=function(d){
+	data[d.id]="tmp"+d.id;
+}
 
 var projection = d3.geo.albersUsa()
     .scale(1280)
@@ -109,7 +129,7 @@ queue()
     .defer(d3.json, "us.json")
     .defer(d3.tsv, "unemployment.tsv", function(d) { 
     	rateById.set(d.id, +d.rate);
-
+    	setData(d);
     })
     .await(ready);
 
@@ -119,7 +139,7 @@ function ready(error, us) {
     .selectAll("path")
       .data(topojson.feature(us, us.objects.counties).features)
     .enter().append("path")
-      .attr("class", function(d) { return devide(rateById.get(d.id)); })
+      .attr("class", function(d) { return devide(d.id); })
       //.attr("class", function(d) { return quantize(rateById.get(d.id)); })
       .attr("d", path)
     .on("mouseover", mouseOver).on("mouseout", mouseOut);
@@ -135,18 +155,20 @@ d3.select(self.frameElement).style("height", height + "px");
 
 
 
-function toolTip(){	/* function to create html content string in tooltip div. */
-	return "<h4>"+1+"</h4><table>"+
-		"<tr><td>Low</td><td>"+(5)+"</td></tr>"+
-		"<tr><td>Average</td><td>"+(4)+"</td></tr>"+
-		"<tr><td>High</td><td>"+(3)+"</td></tr>"+
+function toolTip(d){	/* function to create html content string in tooltip div. */
+	//console.log(d.id);
+	return "<h4>"+"Tablet Server "+data[d.id]+"</h4><table>"+
+		"<tr><td>ingestRate</td><td>"+(5)+"</td></tr>"+
+		"<tr><td>scanRate</td><td>"+(4)+"</td></tr>"+
+		"<tr><td>IndexCacheHits</td><td>"+(3)+"</td></tr>"+
+		"<tr><td>dataCacheHits</td><td>"+(3)+"</td></tr>"+
 		"</table>";
 }
 
 function mouseOver(d){
 	d3.select("#tooltip").transition().duration(200).style("opacity", .9);      
 	
-	d3.select("#tooltip").html(toolTip())  
+	d3.select("#tooltip").html(toolTip(d))  
 		.style("left", (d3.event.pageX) + "px")     
 		.style("top", (d3.event.pageY - 28) + "px");
 }
