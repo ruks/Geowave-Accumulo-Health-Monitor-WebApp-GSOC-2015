@@ -85,7 +85,9 @@ var quantize = d3.scale.quantize()
     .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
 
 var devide=function(id){
-	
+	//console.log(id);
+	//return "q" + 5 + "-9";
+
 	if(id < 1000)
 	 return "q" + 0 + "-9";
 	if(id < 3000)
@@ -104,8 +106,9 @@ var devide=function(id){
 
 var data=new Array();
 
-var setData=function(d){
-	data[d.id]="tmp"+d.id;
+var setData=function(id){
+	//console.log(d);
+	data[id]="tmp_"+id;
 }
 
 var projection = d3.geo.albersUsa()
@@ -127,20 +130,35 @@ var svg = d3.select("body").append("svg")
 
 queue()
     .defer(d3.json, "us.json")
-    .defer(d3.tsv, "unemployment.tsv", function(d) { 
-    	rateById.set(d.id, +d.rate);
-    	setData(d);
-    })
+    //.defer(d3.tsv, "unemployment.tsv", function(d) { rateById.set(d.id, +d.rate); 
+   	.defer(d3.json, "data.json"/*, function(d) { 
+    	console.log(d.length);
+    	var x;
+		for (x in d) {	
+			//console.log(d[x]);	    
+		    rateById.set(d[x].id, +d[x].rate);
+		};    	
+    	//setData(d);
+    	console.log(rateById);
+    }*/
+    )
     .await(ready);
 
-function ready(error, us) {
+function ready(error, us,data) { 
+	//console.log(data);
+
+	for (var x in data) {			    
+	    rateById.set(data[x].id, +data[x].rate);
+	    setData(data[x].id);
+	}
+
   svg.append("g")
       .attr("class", "counties")
     .selectAll("path")
       .data(topojson.feature(us, us.objects.counties).features)
     .enter().append("path")
-      .attr("class", function(d) { return devide(d.id); })
-      //.attr("class", function(d) { return quantize(rateById.get(d.id)); })
+      //.attr("class", function(d) { return devide(d.id); })
+      .attr("class", function(d) { return quantize(rateById.get(d.id)); })
       .attr("d", path)
     .on("mouseover", mouseOver).on("mouseout", mouseOut);
 
@@ -156,7 +174,7 @@ d3.select(self.frameElement).style("height", height + "px");
 
 
 function toolTip(d){	/* function to create html content string in tooltip div. */
-	//console.log(d.id);
+	//console.log(data);
 	return "<h4>"+"Tablet Server "+data[d.id]+"</h4><table>"+
 		"<tr><td>ingestRate</td><td>"+(5)+"</td></tr>"+
 		"<tr><td>scanRate</td><td>"+(4)+"</td></tr>"+
