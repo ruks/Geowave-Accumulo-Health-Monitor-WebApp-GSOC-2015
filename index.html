@@ -104,11 +104,11 @@ var devide=function(id){
 	 return "q" + 6 + "-9";
 };
 
-var data=new Array();
+var node=new Array();
 
-var setData=function(id){
+var setData=function(node){
 	//console.log(d);
-	data[id]="tmp_"+id;
+	node[id]="tmp_"+id;
 }
 
 var projection = d3.geo.albersUsa()
@@ -131,7 +131,7 @@ var svg = d3.select("body").append("svg")
 queue()
     .defer(d3.json, "us.json")
     //.defer(d3.tsv, "unemployment.tsv", function(d) { rateById.set(d.id, +d.rate); 
-   	.defer(d3.json, "data.json"/*, function(d) { 
+   	.defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/monitor/test"/*, function(d) { 
     	console.log(d.length);
     	var x;
 		for (x in d) {	
@@ -145,11 +145,12 @@ queue()
     .await(ready);
 
 function ready(error, us,data) { 
-	//console.log(data);
+	//console.log(data[0].id);
 
 	for (var x in data) {			    
 	    rateById.set(data[x].id, +data[x].rate);
-	    setData(data[x].id);
+	    //setData(data[x]);
+	    node[data[x].id]=data[x];
 	}
 
   svg.append("g")
@@ -174,12 +175,12 @@ d3.select(self.frameElement).style("height", height + "px");
 
 
 function toolTip(d){	/* function to create html content string in tooltip div. */
-	//console.log(data);
-	return "<h4>"+"Tablet Server "+data[d.id]+"</h4><table>"+
-		"<tr><td>ingestRate</td><td>"+(5)+"</td></tr>"+
-		"<tr><td>scanRate</td><td>"+(4)+"</td></tr>"+
-		"<tr><td>IndexCacheHits</td><td>"+(3)+"</td></tr>"+
-		"<tr><td>dataCacheHits</td><td>"+(3)+"</td></tr>"+
+	//console.log(node);
+	return "<h4>"+"Tablet Server "+node[d.id].name+"</h4><table>"+
+		"<tr><td>ingestRate</td><td>"+(node[d.id].ingestRate)+"</td></tr>"+
+		"<tr><td>scanRate</td><td>"+(node[d.id].scanRate)+"</td></tr>"+
+		"<tr><td>IndexCacheHits</td><td>"+(node[d.id].indexCacheHits)+"</td></tr>"+
+		"<tr><td>dataCacheHits</td><td>"+(node[d.id].dataCacheHits)+"</td></tr>"+
 		"</table>";
 }
 
