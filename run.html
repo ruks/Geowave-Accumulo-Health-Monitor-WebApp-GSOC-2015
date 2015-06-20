@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Accumulo Health Monitor</title>
+<link rel="icon" href="/favicon.png">
+<script src="d3.v3.min.js"></script>
+
+<style>
+
+iframe {
+  width: 960px;
+  height: 500px;
+  border: 1px solid #DEDEDE;
+  float:left;
+}
+
+#accordion {
+    /*background-color: lightgrey;*/
+    width: 600px;
+    padding: 25px;
+    border: 2 solid navy;
+    /*margin: 25px;*/
+    position: absolute;
+    right: 0px;
+    float:right;
+}
+
+</style>
+
+
+<header>
+ <meta charset="utf-8">  
+  <link rel="stylesheet" href="jquery/jquery-ui.css">
+  <script src="jquery/jquery-1.10.2.js"></script>
+  <script src="jquery/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="queue.v1.min.js"></script>
+  <script>
+  $(function() {
+    
+  });
+  </script>
+</header>
+
+<body>
+
+<h1>Accumulo Health Monitor</h1>
+
+
+<iframe src="http://localhost/Geowave-Accumulo-Health-Monitor-WebApp-GSOC-2015/" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+
+
+
+<div id="accordion" >
+  
+</div>
+
+<script>
+queue()
+   	.defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/monitor/tablets"
+    )
+    .await(ready);
+
+function ready(error, data) {
+	//console.log(data); 
+	var acc=d3.select("#accordion");
+
+	for (var x in data) {			    
+	    var node=data[x];
+	    acc.append("h3").text(node.name+" "+node.id+" %");
+		var ta=acc.append("div").append("table");
+
+		var row1=ta.append("tr")
+			row1.append("td").text("ingestRate");
+			row1.append("td").text(node.ingestRate);
+
+		var row2=ta.append("tr")
+			row2.append("td").text("scanRate");
+			row2.append("td").text(node.scanRate);
+
+		var row3=ta.append("tr")
+			row3.append("td").text("IndexCacheHits");
+			row3.append("td").text(node.indexCacheHits);
+
+		var row4=ta.append("tr")
+			row4.append("td").text("dataCacheHits");
+			row4.append("td").text(node.dataCacheHits);
+	}
+
+	$( "#accordion" ).accordion(
+	    	{
+		      collapsible: true
+		    }
+    	);
+}
+
+
+// acc.append("h3").text("Tablet Server 1");
+// acc.append("div").append("p").text("Class aptent taciti sociosqu ad litora torquent per conubia nostra, per");
+
+// acc.append("h3").text("Tablet Server 2");
+// acc.append("div").append("p").text("Class aptent taciti sociosqu ad litora torquent per conubia nostra, per");
+
+// acc.append("h3").text("Tablet Server 3");
+// acc.append("div").append("p").text("Class aptent taciti sociosqu ad litora torquent per conubia nostra, per");
+
+// acc.append("h3").text("Tablet Server 4");
+// acc.append("div").append("p").text("Class aptent taciti sociosqu ad litora torquent per conubia nostra, per");
+
+</script>
+
+</body>
