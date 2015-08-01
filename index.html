@@ -125,13 +125,12 @@ var svg = d3.select("body").append("svg")
    	//.attr("id", "tooltip")
    	;
 
-    //svg1 = d3.select("body").append("div")
-   		// .attr("id", "tooltip");
+
 
 queue()
     .defer(d3.json, "us.json")
-    //.defer(d3.tsv, "unemployment.tsv", function(d) { rateById.set(d.id, +d.rate); 
-   	.defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/monitor/test"/*, function(d) { 
+    .defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/stat/geo") 
+   	.defer(d3.tsv, "states.tsv"/*, function(d) { 
     	console.log(d.length);
     	var x;
 		for (x in d) {	
@@ -144,29 +143,57 @@ queue()
     )
     .await(ready);
 
-function ready(error, us,data) { 
-	//console.log(data[0].id);
-
+function ready(error, us,geo,data) { 
+	
 	for (var x in data) {			    
-	    rateById.set(data[x].id, +data[x].rate);
+	    rateById.set(data[x].id, +1); //
 	    //setData(data[x]);
 	    node[data[x].id]=data[x];
 	}
+
 
   svg.append("g")
       .attr("class", "counties")
     .selectAll("path")
       .data(topojson.feature(us, us.objects.counties).features)
+      //.data(topojson.feature(geo, geo.geometry).features)
     .enter().append("path")
       //.attr("class", function(d) { return devide(d.id); })
       .attr("class", function(d) { return quantize(rateById.get(d.id)); })
-      .attr("d", path)
-    .on("mouseover", mouseOver).on("mouseout", mouseOut);
+      .attr("d", path);
+    //.on("mouseover", mouseOver).on("mouseout", mouseOut);
 
   svg.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
       .attr("class", "states")
       .attr("d", path);
+
+
+// console.log(JSON.stringify(poly));
+// console.log(JSON.stringify(geo));
+// console.log(geo.length);
+
+	for (var i = 0; i < geo.length; i++) {
+
+		var id="ruks_SPATIAL_VECTOR_IDX"+"#"+geo[i].tablet.replace("==","")
+		svg.append("g").selectAll("polygon")
+		    .data([geo[i].points])
+			.enter().append("polygon")
+		    .attr("points",function(d) { 
+		        return d.map(function(d) {
+		            return [180+d.x,180+d.y].join(",");
+		        }).join(" ");
+		    })
+		    .style("fill", "yellow")
+		    // .data(geo[0].geometry.coordinates)
+		    .attr("stroke","black")
+		    .attr("id",id)
+		    .on("mouseover", mouseOver).on("mouseout", mouseOut)
+		    .attr("stroke-width",2)
+		    .style("opacity", 0.4)
+		    .attr("class", function(d) { return "q" + i + "-9";  });
+
+	};
 
 }
 
@@ -174,22 +201,33 @@ d3.select(self.frameElement).style("height", height + "px");
 
 
 
-function toolTip(d){	/* function to create html content string in tooltip div. */
-	//console.log(node);
-	return "<h4>"+"Tablet Server "+node[d.id].name+"</h4><table>"+
-		"<tr><td>ingestRate</td><td>"+(node[d.id].ingestRate)+"</td></tr>"+
-		"<tr><td>scanRate</td><td>"+(node[d.id].scanRate)+"</td></tr>"+
-		"<tr><td>IndexCacheHits</td><td>"+(node[d.id].indexCacheHits)+"</td></tr>"+
-		"<tr><td>dataCacheHits</td><td>"+(node[d.id].dataCacheHits)+"</td></tr>"+
-		"</table>";
+function toolTip(tab){	/* function to create html content string in tooltip div. */
+	//console.log(d);	
+
+	return "<h4>"+"Tablet "+tab.tablet+"</h4><table>"+
+		"<tr><td>Table</td><td>"+tab.table+"</td></tr>"+
+		"<tr><td>ingestRate</td><td>"+"ingestRate"+"</td></tr>"+
+		"<tr><td>scanRate</td><td>"+"scanRate"+"</td></tr>"+
+		"<tr><td>IndexCacheHits</td><td>"+"indexCacheHits"+"</td></tr>"+
+		"<tr><td>dataCacheHits</td><td>"+"dataCacheHits"+"</td></tr>"+
+		"</table>";		
 }
 
 function mouseOver(d){
-	d3.select("#tooltip").transition().duration(200).style("opacity", .9);      
 	
-	d3.select("#tooltip").html(toolTip(d))  
+	var id=d3.event.target.id;
+	d3.select("#tooltip").transition().duration(200)
+		.style("opacity", .9)    
 		.style("left", (d3.event.pageX) + "px")     
 		.style("top", (d3.event.pageY - 28) + "px");
+	
+
+	queue().defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/stat/tablet/"+id.split("#")[0]+"/"+id.split("#")[1]+"==")
+			.await(readyTab);
+
+	function readyTab(error, tab) { 		
+		d3.select("#tooltip").html(toolTip(tab));	
+	}	
 }
 
 function mouseOut(){

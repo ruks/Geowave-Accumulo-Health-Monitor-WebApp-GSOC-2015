@@ -46,7 +46,7 @@ iframe {
 <h1>Accumulo Health Monitor</h1>
 
 
-<iframe src="http://localhost/Geowave-Accumulo-Health-Monitor-WebApp-GSOC-2015/" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+<iframe src="http://localhost:8080/geo/" marginwidth="0" marginheight="0" scrolling="no"></iframe>
 
 
 
@@ -56,7 +56,7 @@ iframe {
 
 <script>
 queue()
-   	.defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/monitor/tablets"
+   	.defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/stat/table"
     )
     .await(ready);
 
@@ -66,24 +66,25 @@ function ready(error, data) {
 
 	for (var x in data) {			    
 	    var node=data[x];
-	    acc.append("h3").text(node.name+" "+node.id+" %");
-		var ta=acc.append("div").append("table");
+	    acc.append("h3").text(node.tableName);
+		var ta=acc.append("div").append("table").attr("id",node.tableName);
 
-		var row1=ta.append("tr")
-			row1.append("td").text("ingestRate");
-			row1.append("td").text(node.ingestRate);
+		var row1=ta.append("tr");
+			row1.append("td").text("tablets");
+			row1.append("td").text(node.tablets);
 
-		var row2=ta.append("tr")
-			row2.append("td").text("scanRate");
-			row2.append("td").text(node.scanRate);
+		queue().defer(d3.json, "http://localhost:8080/geowave-service-webapp-0.8.7-SNAPSHOT/stat/tablet/"+node.tableName).await(
+			function(error, tabs){
 
-		var row3=ta.append("tr")
-			row3.append("td").text("IndexCacheHits");
-			row3.append("td").text(node.indexCacheHits);
+				for (var y in tabs) {
+					var tab=tabs[y];
 
-		var row4=ta.append("tr")
-			row4.append("td").text("dataCacheHits");
-			row4.append("td").text(node.dataCacheHits);
+					var row2=d3.select('#'+tab.table).append("tr");
+					row2.append("td").text("Tablet");
+					row2.append("td").text(tab.tablet);
+				}
+			}
+		);
 	}
 
 	$( "#accordion" ).accordion(
